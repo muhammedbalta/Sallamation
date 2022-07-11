@@ -1,9 +1,105 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.SignalR.Client
+@using System.Security.Claims
+@inject NavigationManager NavigationManager
 
-<PageTitle>Index</PageTitle>
+<AuthorizeView>
+    <Authorized>
+        The user: @context.User.FindFirst(ClaimTypes.Name).Value is authorized
+    </Authorized>
+    <NotAuthorized>
+        The User is not authorized
+    </NotAuthorized>
+</AuthorizeView>
 
-<h1>Hello, world!</h1>
+@if (loginResult != null)
+{
+    <h2>
+    Login Result: @loginResult
+</h2>
+}
 
-Welcome to your new app.
+<div class="container justify-content-center row mt-5">
+    <div class="card d-flex flex-column  px-0 col">
+        <div class="card-header py-3">
+            Login
+        </div>
+        <EditForm class="d-flex flex-column h-100" OnSubmit=@OnLoginSubmit Model=@loginFormModel>
+            <div class="card-body flex-fill">
+                <div class="form-floating mb-3">
+                    <InputText id="registerEmail" @bind-Value=loginFormModel.Email
+                        class="form-control shadow-none rounded-0 border-0 border-bottom" placeholder="Email" />
+                    <label for="registerEmail">Email</label>
+                </div>
+                <div class="form-floating">
+                    <InputText id="registerPassword" @bind-Value=loginFormModel.Password
+                        class="form-control shadow-none rounded-0 border-0 border-bottom" placeholder="Password" />
+                    <label for="registerUsername">Password</label>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="col-12 d-flex flex-row-reverse">
+                    <button type="submit" class="btn btn-primary">Sign in</button>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+    <div class="card px-0 col">
+        <div class="card-header py-3">
+            Register
+        </div>
+        <EditForm Model=@registerFormModel>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+            <div class="card-body">
+                <div class="form-floating mb-3">
+                    <InputText id="registerEmail" @bind-Value=registerFormModel.Email
+                        class="form-control shadow-none rounded-0 border-0 border-bottom" placeholder="Email" />
+                    <label for="registerEmail">Email</label>
+                </div>
+                <div class="form-floating mb-3">
+                    <InputText id="registerUsername" @bind-Value=registerFormModel.UserName
+                        class="form-control shadow-none rounded-0 border-0 border-bottom" placeholder="User Name" />
+                    <label for="registerUsername">User Name</label>
+                </div>
+                <div class="form-floating mb-3">
+                    <InputText id="registerPassword" @bind-Value=registerFormModel.Password
+                        class="form-control shadow-none rounded-0 border-0 border-bottom" placeholder="Password" />
+                    <label for="registerUsername">Password</label>
+                </div>
+
+            </div>
+            <div class="card-footer">
+                <div class="col-12 d-flex flex-row-reverse">
+                    <button type="submit" class="btn btn-primary">Sign up</button>
+                </div>
+            </div>
+        </EditForm>
+
+    </div>
+</div>
+
+@code {
+    private HubConnection? hubConnection;
+    RegisterFormModel registerFormModel = new RegisterFormModel();
+    LoginFormModel loginFormModel = new LoginFormModel();
+    string loginResult;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder().WithUrl(new Uri("https://localhost:7108/authhub")).Build();
+        hubConnection.On<string, string>("ReceiveMessage", (email, password) =>
+        {
+            loginResult = $"{email}: {password}";
+            StateHasChanged();
+        });
+        await hubConnection.StartAsync();
+    }
+
+    private async Task OnLoginSubmit(EditContext editContext)
+    {
+        if (hubConnection is not null && editContext.Validate())
+        {
+            await hubConnection.SendAsync("Login", loginFormModel.Email, loginFormModel.Password);
+        }
+    }
+}

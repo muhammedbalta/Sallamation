@@ -1,14 +1,28 @@
 using Microsoft.AspNetCore.ResponseCompression;
-
+using Sallamation.Server.Hubs;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(
+        policy =>
+        {
+            policy.WithOrigins("https://localhost:7107").AllowAnyHeader().AllowAnyMethod();
+        });
+});
+builder.Services.AddSignalR();
+builder.Services.AddResponseCompression(opts =>
+{
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+        new[] { "application/octet-stream" });
+});
+//builder.Services.AddControllersWithViews();
+//builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
+app.UseResponseCompression();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -23,14 +37,15 @@ else
 
 app.UseHttpsRedirection();
 
-app.UseBlazorFrameworkFiles();
+//app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseCors();
 
-
-app.MapRazorPages();
-app.MapControllers();
-app.MapFallbackToFile("index.html");
+//app.MapRazorPages();
+//app.MapControllers();
+app.MapHub<AuthHub>("/authhub");
+//app.MapFallbackToFile("index.html");
 
 app.Run();
