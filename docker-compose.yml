@@ -1,0 +1,11 @@
+version: "3.4"
+
+services:
+  sallamation-server:
+    image: sallamation-server
+    ports:
+      - "7108:80"
+  sallamation-client:
+    image: sallamation-client
+    ports:
+      - "7107:80"

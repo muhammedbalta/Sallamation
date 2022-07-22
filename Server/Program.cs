@@ -1,14 +1,17 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.ResponseCompression;
+using Sallamation.Server.Data;
 using Sallamation.Server.Hubs;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+//builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<SallamationContext>();
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(
         policy =>
         {
-            policy.WithOrigins("https://localhost:7107").AllowAnyHeader().AllowAnyMethod();
+            policy.WithOrigins("https://localhost:7107", "http://localhost:7107").AllowAnyHeader().AllowAnyMethod();
         });
 });
 builder.Services.AddSignalR();

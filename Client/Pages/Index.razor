@@ -86,7 +86,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        hubConnection = new HubConnectionBuilder().WithUrl(new Uri("https://localhost:7108/authhub")).Build();
+        hubConnection = new HubConnectionBuilder().WithUrl(new Uri("http://localhost:7108/authhub")).Build();
         hubConnection.On<string, string>("ReceiveMessage", (email, password) =>
         {
             loginResult = $"{email}: {password}";
