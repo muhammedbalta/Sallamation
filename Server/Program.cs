@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 //builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<SallamationContext>();
 builder.Services.AddEntityFrameworkNpgsql().AddDbContext<SallamationContext>(opt => opt.UseNpgsql(builder.Configuration.GetConnectionString("PostgreDB")));
+builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<SallamationContext>();
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(
@@ -40,7 +41,8 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseHttpsRedirection();
 
 //app.UseBlazorFrameworkFiles();

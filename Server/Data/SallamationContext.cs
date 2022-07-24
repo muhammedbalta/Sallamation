@@ -5,7 +5,7 @@ using Sallamation.Server.Models;
 
 namespace Sallamation.Server.Data
 {
-    public class SallamationContext : DbContext
+    public class SallamationContext : IdentityDbContext<IdentityUser>
     {
         public SallamationContext(DbContextOptions options) : base(options)
         {

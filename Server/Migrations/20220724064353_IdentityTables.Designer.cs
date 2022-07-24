@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Sallamation.Server.Data;
@@ -11,9 +12,10 @@ using Sallamation.Server.Data;
 namespace Sallamation.Server.Migrations
 {
     [DbContext(typeof(SallamationContext))]
-    partial class SallamationContextModelSnapshot : ModelSnapshot
+    [Migration("20220724064353_IdentityTables")]
+    partial class IdentityTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
