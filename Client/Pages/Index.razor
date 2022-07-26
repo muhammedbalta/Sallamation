@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using Microsoft.AspNetCore.SignalR.Client
 @using System.Security.Claims
+@inject IAuthenticationService AuthenticationService
 @inject NavigationManager NavigationManager
 
 <AuthorizeView>
@@ -48,7 +49,7 @@
         <div class="card-header py-3">
             Register
         </div>
-        <EditForm Model=@registerFormModel>
+        <EditForm Model=@registerFormModel OnSubmit=@OnRegisterSubmit>
 
             <div class="card-body">
                 <div class="form-floating mb-3">
@@ -83,6 +84,8 @@
     RegisterFormModel registerFormModel = new RegisterFormModel();
     LoginFormModel loginFormModel = new LoginFormModel();
     string loginResult;
+    public bool ShowRegistrationErrors { get; set; }
+    public IEnumerable<string> Errors { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -100,6 +103,21 @@
         if (hubConnection is not null && editContext.Validate())
         {
             await hubConnection.SendAsync("Login", loginFormModel.Email, loginFormModel.Password);
+        }
+    }
+
+    private async Task OnRegisterSubmit(EditContext editContext)
+    {
+        ShowRegistrationErrors = false;
+        var result = await AuthenticationService.RegisterUser(registerFormModel);
+        if (!result.IsSuccessfulRegistration)
+        {
+            Errors = result.Errors;
+            ShowRegistrationErrors = true;
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/");
         }
     }
 }

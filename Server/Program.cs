@@ -1,15 +1,36 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Sallamation.Server.Data;
 using Sallamation.Server.Extensions;
 using Sallamation.Server.Hubs;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-//builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<SallamationContext>();
 builder.Services.AddEntityFrameworkNpgsql().AddDbContext<SallamationContext>(opt => opt.UseNpgsql(builder.Configuration.GetConnectionString("PostgreDB")));
 builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<SallamationContext>();
+var jwtSettings = builder.Configuration.GetSection("JWTSettings");
+builder.Services.AddAuthentication(opt =>
+{
+    opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+
+        ValidIssuer = jwtSettings["validIssuer"],
+        ValidAudience = jwtSettings["validAudience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["securityKey"]))
+    };
+});
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(
@@ -24,7 +45,7 @@ builder.Services.AddResponseCompression(opts =>
     opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
         new[] { "application/octet-stream" });
 });
-//builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews();
 //builder.Services.AddRazorPages();
 
 var app = builder.Build();
@@ -52,7 +73,7 @@ app.UseRouting();
 app.UseCors();
 
 //app.MapRazorPages();
-//app.MapControllers();
+app.MapControllers();
 app.MapHub<AuthHub>("/authhub");
 //app.MapFallbackToFile("index.html");
 
